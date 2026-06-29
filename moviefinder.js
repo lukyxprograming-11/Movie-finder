@@ -1,28 +1,34 @@
-//DATA
-
-
-
 //STATE
 
 const state = {
     movies: [], 
     searchQuery:"", 
-    selectedMovie: null, 
+    selectedMovie: null,
+    homeMovies: [],
 
     loadingMovies: false,
     loadingDetails: false,
+    loadingHome: false,
 
     errorMovies: null,
-    errorDetails: null 
+    errorDetails: null,
+    errorHome:null,  
     
 };
 
 //DOM 
 const resultcontent = document.getElementById("result-content")
+const resultSection = document.getElementById("result-section")
+
 const searchinput = document.getElementById("search-input")
 const searchbutton = document.getElementById("search-button")
+
 const overlay = document.getElementById("overlay")
 const modal = document.getElementById("modal")
+
+const homeContent = document.getElementById("home-content")
+const homeSection = document.getElementById("home-section")
+
 
 
 //API CONFIG
@@ -49,7 +55,16 @@ async function fetchMovies(query){
             return
         }
 
-    const transformedMovies= movieData.Search.map(movie => { 
+        const validMovies = movieData.Search.filter(movie => {
+            
+            return movie.Poster !== "N/A" 
+            
+        
+        } )
+
+
+
+    const transformedMovies= validMovies.map(movie => { 
         return{
 
         id: movie.imdbID, 
@@ -66,6 +81,55 @@ async function fetchMovies(query){
     state.loadingMovies = false
     renderResults()
     
+}
+
+async function fetchHomeMovies() {
+
+    state.loadingHome = true
+    state.errorHome = null
+
+    const query = "Avengers"; 
+    
+    const requestUrl =  `${BASE_URL}?apikey=${API_KEY}&s=${query}`
+    const response =  await fetch(requestUrl)
+    const movieData = await response.json()
+
+    if(movieData.Response === "False"){
+
+            state.homeMovies = []
+            state.errorHome = "Movie not found"
+            state.loadingHome = false
+            renderHomeMovies()
+            return
+        }
+    
+
+    const validMovies = movieData.Search.filter(movie => {
+            
+            return movie.Poster !== "N/A" 
+            
+        
+        } )
+
+        const transformedHomeMovies= validMovies.map(movie => { 
+        return{
+
+        id: movie.imdbID, 
+        title: movie.Title,
+        year: movie.Year, 
+        poster: movie.Poster,
+        type: movie.Type 
+        }
+         
+
+    } )
+
+
+    state.homeMovies = transformedHomeMovies 
+    state.loadingHome = false
+    renderHomeMovies()
+
+
 }
 
 async function fetchMovieDetails(imdbID){
@@ -110,7 +174,7 @@ function renderMovies(){
    resultcontent.innerHTML =  filteredMovies.map((movie)=> {
 
 
-
+        
             return `<div class="movie-card" > <h3 class="title">${movie.title}</h3> <img class="movie-poster" src="${movie.poster}"> <p class="year">${movie.year}</p> <button class="detail" data-id="${movie.id}">detail</button></div>`})
                    .join("")
 
@@ -159,23 +223,60 @@ function renderResults(){
     renderMovies()
 }
 
+function renderHomeMovies(){
+
+    homeContent.innerHTML =  state.homeMovies.map((movie)=> {
+
+
+        
+            return `<div class="movie-card" > <h3 class="title">${movie.title}</h3> <img class="movie-poster" src="${movie.poster}"> <p class="year">${movie.year}</p> <button class="detail" data-id="${movie.id}">detail</button></div>`})
+                   .join("")
+
+}
+
+function renderHomeResults(){
+    if(state.loadingHome === true){
+            homeContent.innerHTML= "Searching movies"
+            return
+
+    }
+
+    if(state.errorHome !== null){
+        homeContent.innerHTML= "Movie not found"
+        return
+    }
+
+    renderHomeMovies()
+
+}
+
 async function executeSearch() {
 
      state.searchQuery = searchinput.value
 
-     if(state.searchQuery === ""){
+     if(state.searchQuery === ""){ 
 
-        state.movies = []
-        state.errorMovies = null
-        renderResults()
-        return
-     }
-
-     fetchMovies(state.searchQuery)
+        homeSection.style.display = "block" 
+        resultSection.style.display = "none"
+        state.movies = [] 
+        state.errorMovies = null 
+        renderHomeResults() 
+        return } 
+        
+    if(state.searchQuery !== ""){ 
+        homeSection.style.display = "none"
+        resultSection.style.display = "block"
+        state.movies = [] 
+        state.errorMovies = null 
+    } 
+    
+    fetchMovies(state.searchQuery)
 
      
 
 }
+
+
 
 async function openMovieDetails(imdbID){
 
@@ -184,7 +285,7 @@ async function openMovieDetails(imdbID){
 
     await fetchMovieDetails(imdbID)
 
-    console.log(state.selectedMovie)
+    
     
     state.loadingDetails = false
 
@@ -193,6 +294,18 @@ async function openMovieDetails(imdbID){
     }
 
     
+
+}
+
+function handleMovieDetailClick(event){
+
+    const detailButton = event.target.closest(".detail")
+      if(!detailButton) return
+
+      const movieId = detailButton.dataset.id
+
+      openMovieDetails(movieId)
+
 
 }
 
@@ -222,12 +335,14 @@ searchinput.addEventListener("keydown", function(event){
 
 resultcontent.addEventListener("click", function(event){
 
-      const detailButton = event.target.closest(".detail")
-      if(!detailButton) return
+      handleMovieDetailClick(event)
 
-      const movieId = detailButton.dataset.id
+      
+})
 
-      openMovieDetails(movieId)
+homeContent.addEventListener("click", function(event){
+
+      handleMovieDetailClick(event)
 
       
 })
@@ -245,6 +360,6 @@ overlay.addEventListener("click", function(event){
 
 
 //INIT 
-
+fetchHomeMovies()
 renderResults()
 renderOverlay()
