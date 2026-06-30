@@ -2,9 +2,11 @@
 
 const state = {
     movies: [], 
-    searchQuery:"", 
-    selectedMovie: null,
     homeMovies: [],
+    watchlist: [],
+    selectedMovie: null,
+    searchQuery:"", 
+
 
     loadingMovies: false,
     loadingDetails: false,
@@ -13,8 +15,12 @@ const state = {
     errorMovies: null,
     errorDetails: null,
     errorHome:null,  
+
+    isWatchlistOpen: false
     
 };
+
+loadWatchlist()
 
 //DOM 
 const resultcontent = document.getElementById("result-content")
@@ -29,12 +35,18 @@ const modal = document.getElementById("modal")
 const homeContent = document.getElementById("home-content")
 const homeSection = document.getElementById("home-section")
 
+const watchlistSection = document.getElementById("watchlist-section")
+const watchlistContent = document.getElementById("watchlist-content")
+const watchlistButton = document.getElementById("watchlist-button")
+
 
 
 //API CONFIG
 
 const BASE_URL = "https://www.omdbapi.com/";
 const API_KEY = "d111d6a4"
+
+
 
 async function fetchMovies(query){
 
@@ -167,16 +179,40 @@ async function fetchMovieDetails(imdbID){
 
 //RENDER
 
+function renderMovieCards(dataset) {
+
+    return dataset.map(movie => {
+
+        const movieInWatchlist = isMovieInWatchlist(movie.id)
+
+        const watchlistButtonText = movieInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"
+
+        return `
+            <div class="movie-card">
+                <h3 class="title">${movie.title}</h3>
+
+                <img class="movie-poster" src="${movie.poster}">
+
+                <p class="year">${movie.year}</p>
+
+                <button class="detail" data-id="${movie.id}">
+                    Detail
+                </button>
+
+                <button class="watchlist-button" data-id="${movie.id}">${watchlistButtonText}</button>
+            </div>
+        `
+
+    }).join("")
+}
+
+
+
 function renderMovies(){
 
  const filteredMovies = state.movies.filter(movie => movie.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
 
-   resultcontent.innerHTML =  filteredMovies.map((movie)=> {
-
-
-        
-            return `<div class="movie-card" > <h3 class="title">${movie.title}</h3> <img class="movie-poster" src="${movie.poster}"> <p class="year">${movie.year}</p> <button class="detail" data-id="${movie.id}">detail</button></div>`})
-                   .join("")
+   resultcontent.innerHTML =  renderMovieCards(filteredMovies) 
 
                   
 
@@ -225,12 +261,8 @@ function renderResults(){
 
 function renderHomeMovies(){
 
-    homeContent.innerHTML =  state.homeMovies.map((movie)=> {
-
-
-        
-            return `<div class="movie-card" > <h3 class="title">${movie.title}</h3> <img class="movie-poster" src="${movie.poster}"> <p class="year">${movie.year}</p> <button class="detail" data-id="${movie.id}">detail</button></div>`})
-                   .join("")
+   homeContent.innerHTML = renderMovieCards(state.homeMovies)
+    console.log(state.homeMovies)
 
 }
 
@@ -250,30 +282,134 @@ function renderHomeResults(){
 
 }
 
+function renderWatchlist() {
+    watchlistContent.innerHTML = renderMovieCards(state.watchlist)
+}
+
+function renderCurrentView() {
+
+    if (state.isWatchlistOpen === true) {
+
+        homeSection.style.display = "none"
+        resultSection.style.display = "none"
+        watchlistSection.style.display = "block"
+
+        return
+    }
+
+    if (state.searchQuery === "") {
+
+        homeSection.style.display = "block"
+        resultSection.style.display = "none"
+        watchlistSection.style.display = "none"
+
+        return
+    }
+
+    homeSection.style.display = "none"
+    resultSection.style.display = "block"
+    watchlistSection.style.display = "none"
+}
+
+function findMovieById(movieId) {
+
+    const movieFromResults = state.movies.find(movie => movie.id === movieId)
+
+    if (movieFromResults) {
+        return movieFromResults
+    }
+
+    const movieFromHome = state.homeMovies.find(movie => movie.id === movieId)
+
+    if (movieFromHome) {
+        return movieFromHome
+    }
+
+    const movieFromWatchlist = state.watchlist.find(movie => movie.id === movieId)
+
+    if (movieFromWatchlist) {
+        return movieFromWatchlist
+    }
+
+    if (
+        state.selectedMovie !== null &&
+        state.selectedMovie.id === movieId
+    ) {
+        return state.selectedMovie
+    }
+
+    return null
+}
+
+
+
+function toggleWatchlist(movieId){
+
+    const movie = findMovieById(movieId)
+
+    if(movie === null){
+        return
+    }
+
+    const existsInWatchlist = state.watchlist.some(watchlistMovie => watchlistMovie.id === movie.id 
+    )
+
+    if(existsInWatchlist === true){
+
+      const updatedWatchlist =  state.watchlist.filter(watchlistMovie => watchlistMovie.id !== movie.id)
+
+      state.watchlist = updatedWatchlist
+    } else {
+
+        state.watchlist.push(movie)
+
+    }
+    saveWatchlist()
+    renderWatchlist()
+    renderHomeMovies()
+    renderMovies()
+
+}
+
+function saveWatchlist(){ localStorage.setItem("watchlist", JSON.stringify(state.watchlist))}
+
+function loadWatchlist() {
+
+    const storedWatchlist = localStorage.getItem("watchlist")
+
+    if (storedWatchlist) {
+        state.watchlist = JSON.parse(storedWatchlist)
+    }
+
+}
+
+function isMovieInWatchlist(movieId) {
+    return state.watchlist.some(
+        movie => movie.id === movieId
+    )
+}
+
 async function executeSearch() {
 
-     state.searchQuery = searchinput.value
+    state.searchQuery = searchinput.value
 
-     if(state.searchQuery === ""){ 
+    if (state.searchQuery === "") {
 
-        homeSection.style.display = "block" 
-        resultSection.style.display = "none"
-        state.movies = [] 
-        state.errorMovies = null 
-        renderHomeResults() 
-        return } 
-        
-    if(state.searchQuery !== ""){ 
-        homeSection.style.display = "none"
-        resultSection.style.display = "block"
-        state.movies = [] 
-        state.errorMovies = null 
-    } 
-    
+        state.movies = []
+        state.errorMovies = null
+
+        renderCurrentView()
+        renderHomeResults()
+
+        return
+    }
+
+    state.movies = []
+    state.errorMovies = null
+
+    renderCurrentView()
+
     fetchMovies(state.searchQuery)
-
-     
-
 }
 
 
@@ -309,6 +445,17 @@ function handleMovieDetailClick(event){
 
 }
 
+function handleWatchlistClick(event) {
+
+    const watchlistButton = event.target.closest(".watchlist-button")
+
+    if (!watchlistButton) return
+
+    const movieId = watchlistButton.dataset.id
+
+    toggleWatchlist(movieId)
+}
+
 
 
 //EVENTS
@@ -336,6 +483,7 @@ searchinput.addEventListener("keydown", function(event){
 resultcontent.addEventListener("click", function(event){
 
       handleMovieDetailClick(event)
+      handleWatchlistClick(event)
 
       
 })
@@ -343,8 +491,14 @@ resultcontent.addEventListener("click", function(event){
 homeContent.addEventListener("click", function(event){
 
       handleMovieDetailClick(event)
+      handleWatchlistClick(event)
 
       
+})
+
+watchlistContent.addEventListener("click", function(event){
+    handleMovieDetailClick(event)
+    handleWatchlistClick(event)
 })
 
 overlay.addEventListener("click", function(event){
@@ -357,9 +511,20 @@ overlay.addEventListener("click", function(event){
 
 })
 
+watchlistButton.addEventListener("click", function () {
+
+    state.isWatchlistOpen = !state.isWatchlistOpen
+
+    renderCurrentView()
+    renderWatchlist()
+
+})
+
+
 
 
 //INIT 
+
 fetchHomeMovies()
 renderResults()
 renderOverlay()
