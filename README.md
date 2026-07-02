@@ -4,7 +4,7 @@ A responsive movie search application built with HTML, CSS, Vanilla JavaScript a
 
 ## Overview
 
-Movie Finder is a frontend project where users can search for movies, browse popular movies on the home page and open a modal with movie details.
+Movie Finder is a frontend project where users can search for movies, browse popular movies on the home page, save movies to a watchlist and open a modal with movie details.
 
 I created this project to practice:
 
@@ -23,16 +23,19 @@ I created this project to practice:
 
 * Search movies using the OMDb API
 * Home page with popular movies
+* Add and remove movies from watchlist
+* Watchlist saved with Local Storage
 * Responsive movie cards
 * Movie details modal
 * Loading states
 * Error handling
 * Empty input validation
+* Empty watchlist state
 * Event delegation
 * Data transformation before rendering
 * State-based rendering
 * Responsive layout for mobile, tablet and desktop
-* Home view and search view
+* Home view, search view and watchlist view
 
 ---
 
@@ -42,6 +45,7 @@ I created this project to practice:
 * CSS3
 * Vanilla JavaScript (ES6+)
 * OMDb API
+* Local Storage API
 
 ---
 
@@ -53,8 +57,10 @@ Current state:
 
 * movies
 * homeMovies
+* watchlist
 * selectedMovie
 * searchQuery
+* isWatchlistOpen
 * loadingMovies
 * loadingHome
 * loadingDetails
@@ -100,11 +106,14 @@ UI
 * Render logic is separated from API logic.
 * The UI updates after state changes.
 * Search, Home and Details use separate loading and error states.
+* Search, Home and Watchlist use separate views.
 * `state.movies` is the source of truth for search results.
 * `state.homeMovies` is the source of truth for the home page.
+* `state.watchlist` is the source of truth for saved movies.
 * `state.selectedMovie` is the source of truth for the movie modal.
 * API data is transformed before it is saved in the state.
-* Home and Search views use derived UI state.
+* Home, Search and Watchlist use derived UI state.
+* Movie cards use one shared renderer.
 
 ---
 
@@ -115,19 +124,20 @@ UI
 * Search endpoint completed
 * Movie details completed
 * Modal completed
-* Movie Finder v1.0 completed
+* Watchlist completed
+* Local Storage integration completed
+* Movie Finder v1.1.1 completed
 
 ---
 
 ## Planned Improvements
 
-* Watchlist feature
-* Local Storage support
 * Movie filtering
 * Movie sorting
 * Placeholder images for missing posters
 * Genre badges
-* More UI improvements and animations
+* UI animations
+* More visual improvements
 
 ---
 
