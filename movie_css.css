@@ -41,17 +41,21 @@ body{
 
 /* SEARCH */
 .search-section{
-margin-top: 10px;
-margin-bottom: 10px;
-
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.primary-controls{
+
+.primary-controls, .secondary-controls  {
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 10px;
 }
+
 
 .search-input{
     width: auto;
@@ -90,6 +94,38 @@ margin-bottom: 10px;
 
     box-shadow:
         0 4px 12px rgba(0,0,0,.12);
+}
+
+.watchlist-button {
+
+    background-color: #eef2ff;
+    color: #4338ca;
+
+    font-weight: 600;
+
+    border: 1px solid #c7d2fe;
+
+    padding: .5rem 1rem;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition:
+        background-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.watchlist-button:hover {
+
+    background-color: #e0e7ff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.12);
+
 }
 
 
@@ -346,6 +382,22 @@ margin-bottom: 10px;
     font-weight: 600;
 }
 
+
+
+.empty-watchlist{
+
+    text-align: center;
+}
+
+.empty-watchlist h2 {
+    margin-bottom: .5rem;
+}
+
+.empty-watchlist p {
+    opacity: .7;
+}
+
+
 /*responsive CSS*/
 
 /* ======================
@@ -354,7 +406,7 @@ margin-bottom: 10px;
 
 @media (min-width: 700px) {
 
-.primary-controls{
+.primary-controls, .secondary-controls{
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -457,7 +509,7 @@ margin-bottom: 10px;
 
 @media (min-width: 1024px) {
 
-    .primary-controls{
+    .primary-controls, .secondary-controls{
     display: flex;
     flex-direction: row;
     justify-content: center;

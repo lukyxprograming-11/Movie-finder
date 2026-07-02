@@ -53,7 +53,7 @@ async function fetchMovies(query){
         state.loadingMovies = true,
         state.errorMovies = null
 
-    const requestUrl =  `${BASE_URL}?apikey=${API_KEY}&s=${query} `
+    const requestUrl =  `${BASE_URL}?apikey=${API_KEY}&s=${query}`
     const response =  await fetch(requestUrl)
     const movieData = await response.json()
 
@@ -262,7 +262,7 @@ function renderResults(){
 function renderHomeMovies(){
 
    homeContent.innerHTML = renderMovieCards(state.homeMovies)
-    console.log(state.homeMovies)
+    
 
 }
 
@@ -283,6 +283,19 @@ function renderHomeResults(){
 }
 
 function renderWatchlist() {
+
+    if (state.watchlist.length === 0) {
+
+        watchlistContent.innerHTML = `
+            <div class="empty-watchlist">
+            <h2>🎬 Your watchlist is empty</h2>
+            <p>Search for a movie and add it to your collection.</p>
+            </div>
+        `
+
+        return
+    }
+
     watchlistContent.innerHTML = renderMovieCards(state.watchlist)
 }
 
